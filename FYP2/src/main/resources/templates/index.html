@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form Manager</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <script src="/bootstrap/js/bootstrap.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            padding-top: 20px;
+        }
+
+        .main-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            margin: 10px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+        
+        .btn-download {
+        	background-color: blue;
+        	border-color: blue;
+        	color: white;
+        }
+    </style>
+</head>
+<body>
+     <div class="container">
+     	<div th:replace="fragments/header"></div>
+        <div class="main-content">
+            <h1>Your Pre-filled Application Form</h1>
+
+            <form th:action="@{/uploadExcel}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="file" name="file" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload File</button>
+            </form>
+
+            <a th:href="@{/previewPage}" class="btn btn-download">Preview Forms</a>
+
+            <p th:text="${message}" class="text-success"></p>
+            <p th:text="${error}" class="text-danger"></p>
+        </div>
+        <div th:replace="fragments/footer"></div>
+    </div>
+</body>
+</html>

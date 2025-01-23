@@ -1,0 +1,63 @@
+<style>
+    /* Your existing styles remain unchanged */
+    header {
+        background-color: #4CAF50;
+        color: black;
+        padding: 10px;
+    }
+
+    .navbar-brand img {
+        height: 30px;
+        margin-right: 10px;
+    }
+    
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    .navbar-nav a.nav-link {
+        color: black !important;
+    }
+
+    .navbar-nav a.nav-link:hover {
+        color: #555 !important;
+    }
+
+    .navbar-nav a.btn {
+        background-color: white;
+        color: #4CAF50;
+    }
+
+    body {
+        background: rgba(240, 240, 240);
+    }
+</style>
+
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="/images/Nets-logo.png">
+                <span class="navbar-brand h1">Nets</span>
+            </a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link active" href="/">View Froms</a>
+            </div>
+
+            <!-- Move login/logout/register to the right -->
+            <div class="navbar-nav ms-auto">
+                <a sec:authorize="!isAuthenticated()" class="nav-link active" href="/login">Login</a>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="">
+                    <button class="btn nav-link active" type="submit">Logout</button>
+                </form>
+                <a class="nav-link active" href="/admin/register">Register</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div sec:authorize="isAuthenticated()">
+    <h4 class="text-center">
+        Hello <span sec:authentication="principal.username"></span>!
+    </h4>
+</div>

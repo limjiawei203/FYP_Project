@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Application Forms</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <script src="/bootstrap/js/bootstrap.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+
+        .main-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            margin: 10px;
+        }
+
+        .preview-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            transition: transform 0.2s;
+        }
+
+        .preview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-actions {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn-download {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background-color: #004494;
+            border-color: #004494;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-count {
+            color: #6c757d;
+            font-size: 1.1em;
+        }
+
+        .record-details {
+            margin-bottom: 10px;
+        }
+
+        .record-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="fragments/header"></div>
+        <div class="main-content">
+            <div class="preview-header">
+                <h1>Preview Application Forms</h1>
+                <span class="form-count" th:text="${'Total Forms: ' + records.size()}"></span>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Upload
+                </a>
+                <a th:href="@{/downloadForms}" class="btn btn-download">
+                    <i class="fas fa-download"></i> Download All Forms
+                </a>
+            </div>
+
+            <div th:if="${records.empty}" class="no-records">
+                <p>No forms available for preview. Please upload an Excel file first.</p>
+            </div>
+
+            <div th:if="${!records.empty}" class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Trading Name</th>
+                            <th>Contact Name</th>
+                            <th>Mobile Number</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="record : ${records}">
+                            <td th:text="${record.cust_name_tx}"></td>
+                            <td th:text="${record.trading_name}"></td>
+                            <td th:text="${record.ctc_name}"></td>
+                            <td th:text="${record.mobile_no}"></td>
+                            <td th:text="${record.email_tx}"></td>
+                            <td><a th:href="@{info/edit/{id}(id=${record.id})}">Edit</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div th:replace="fragments/footer"></div>
+    </div>
+
+    <!-- Add Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</body>
+</html>

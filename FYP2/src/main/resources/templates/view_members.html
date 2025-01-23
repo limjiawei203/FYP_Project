@@ -1,0 +1,91 @@
+<!DOCTYPE HERE>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Nets - View Members</title>
+<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+<script src="/bootstrap/css/bootstrap.js"></script>
+ <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            padding-top: 20px;
+        }
+
+        main {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .h1 {
+            font-size: 24px;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+	<div class="container">
+		<div th:replace="fragments/header"></div>
+		<div class="h1">View Members</div>
+		<div class="alert alert-primary" role="alert" th:text="${success}" th:if="${success}"></div>
+		<table class="table bordered">
+			<thead>
+				<tr>
+					<th>UEN</th>
+					<th>NRIC</th>
+					<th>Name</th>
+					<th>Username</th>
+					<th>Email</th>
+					<th>Role</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				<th:block th:each="member : ${listMember}">
+					<tr>
+						<td th:text="${member.uen}"></td>
+						<td th:text="${member.nric}"></td>
+						<td th:text="${member.name}"></td>
+						<td th:text="${member.username}"></td>
+						<td th:text="${member.email}"></td>
+						<td th:text="${member.role}"></td>
+						<td><a th:href="@{members/edit/{id}(id=${member.id})}">Edit</a></td>
+					</tr>
+				</th:block>
+			</tbody>
+		</table>
+
+		<div th:replace="fragments/footer"></div>
+	</div>
+</body>
+</html>
