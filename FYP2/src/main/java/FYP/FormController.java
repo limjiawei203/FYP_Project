@@ -373,14 +373,14 @@ import java.util.Optional;
 			return "edit_info";
 		}
 
-		@PostMapping("/info/edit/{id}")
-		public String saveUpdatedInfo(@PathVariable("id") Integer id,@Valid Exceldatabase record, BindingResult bindingResult) {
-			if(bindingResult.hasErrors()) {
-				return "edit_info";
-			}
-			databaseSampleRepository.save(record);
-			return "redirect:/previewPage";
-		}
+	    @PostMapping("/info/edit/{id}") 
+	    public String saveUpdatedInfo(@PathVariable("id") Integer id,@Valid Exceldatabase record, BindingResult bindingResult) { 
+	    	if(bindingResult.hasErrors()) { 
+	    		return "edit_info"; 
+	        } 
+	           	databaseSampleRepository.save(record); 
+	           	return "redirect:/previewPage"; 
+	        } 
 //	    
 //	    @GetMapping("/preview")
 //	    public ResponseEntity<InputStreamResource> previewAndDownloadForms() {

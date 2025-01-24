@@ -7,6 +7,10 @@
  
 <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
 <script src="/bootstrap/js/bootstrap.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.11.0"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    
 <style>
         body {
             background-color: #f8f9fa;
@@ -106,17 +110,140 @@
 					<input type="submit" value="Update Info">
 				</div>
 				
+				<div class="mt-3 mb-5">
+					<p>Click the button to fill form fields in an existing PDF document with <code>pdf-lib</code></p>
+			     		<button onclick="modifyPdf()">Fill PDF</button>
+	     		</div>
+				
 			</form>
 			<script>
-				'use strict'
-				var form = document.querySelector(".needs-validation")
-				form.addEventListener('submit', function(event) {
-					if (!form.checkValidity()) {
-						event.preventDefault()
-						event.stopPropagation()
-					}
-					form.classList.add('was-validated')
-				})
+			
+			'use strict'
+			var form = document.querySelector(".needs-validation")
+			form.addEventListener('submit', function(event) {
+				if (!form.checkValidity()) {
+					event.preventDefault()
+					event.stopPropagation()
+				}
+				form.classList.add('was-validated')
+			})
+			
+			const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
+			  
+			  
+		    async function modifyPdf(){
+				console.log("modifyPdf function called");
+				const formUrl = '/downloads/NETS Application Form_PIF_A_v11-1._Clean.pdf';
+				const formPdfBytes = await fetch(formUrl).then(res => res.arrayBuffer())
+			 
+		    	// Fetch the PDF with form fields
+		   		const url = formUrl
+		  		const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+		      
+		      // Load a PDFDocument from the existing PDF bytes
+		      const pdfDoc = await PDFDocument.load(existingPdfBytes)
+
+		      // Embed the Helvetica font
+		      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+		      // Get the first page of the document
+		      const pages = pdfDoc.getPages()
+		      const firstPage = pages[0]
+
+		      // Get the width and height of the first page
+		      const { width, height } = firstPage.getSize()
+
+		      // Draw a string of text diagonally across the first page
+		      firstPage.drawText('dd', {
+		        x: 127.27,
+		        y: height / 2 + 300,
+		        size: 10,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+			  
+		      firstPage.drawText('Business Registration Name', {
+		        x: 400,
+		        y: height / 2 + 300,
+		        size: 10,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('Trading Name', {
+		        x: 50,
+		        y: height / 2 + 270,
+		        size: 20,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('X', {
+		    	 x: 47,
+		    	 y: height / 2 + 209,
+		        size: 6,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('X', {
+		    	 x: 295,
+		    	 y: height / 2 + 209,
+		        size: 6,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      
+		       firstPage.drawText('ctc_name', {
+		    	 x: 150,
+		    	 y: height / 2 + 30,
+		        size: 15,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('Office', {
+		    	 x: 450,
+		    	 y: height / 2 + 30,
+		        size: 15,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('Mailing address', {
+		    	 x: 120,
+		    	 y: height / 2 - 10,
+		        size: 15,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      firstPage.drawText('Email address', {
+		    	 x: 420,
+		    	 y: height / 2 + 10,
+		        size: 20,
+		        font: helveticaFont,
+		        color: rgb(0.95, 0.1, 0.1),
+		        rotate: degrees(0),
+		      })
+		      
+		      // Serialize the PDFDocument to bytes (a Uint8Array)
+		      const pdfBytes = await pdfDoc.save()
+
+				// Trigger the browser to download the PDF document
+		      	download(pdfBytes, "NETS Application Form_PIF_A_v11-1._Clean.pdf", "application/pdf");
+		    }
+			
+				
 			</script>
 		</main>
 		<div th:replace="fragments/footer"></div>

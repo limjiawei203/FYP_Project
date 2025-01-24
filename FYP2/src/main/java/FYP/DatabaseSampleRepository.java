@@ -10,5 +10,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DatabaseSampleRepository extends JpaRepository<Exceldatabase, Integer> {
 	Optional<Exceldatabase> findById(Long id);
-    // You can leave this empty, as we'll handle the finding logic in the service
 }
