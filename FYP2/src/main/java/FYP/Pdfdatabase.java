@@ -79,5 +79,5 @@ public class Pdfdatabase {
     public void setBusinessEntityType(String businessEntityType) {
         this.businessEntityType = businessEntityType;
     }
-    
+
 }
