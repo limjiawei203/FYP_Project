@@ -169,7 +169,7 @@
 			        rotate: degrees(0),
 			      })
 				  
-			      firstPage.drawText('Business Registration Name', {
+			      firstPage.drawText('NULL', {
 			        x: 400,
 			        y: height / 2 + 300,
 			        size: 10,
@@ -178,14 +178,24 @@
 			        rotate: degrees(0),
 			      })
 			      
-			      firstPage.drawText(tradingName, {
-			        x: 50,
-			        y: height / 2 + 270,
-			        size: 20,
-			        font: helveticaFont,
-			        color: rgb(0.95, 0.1, 0.1),
-			        rotate: degrees(0),
-			      })
+				    // Draw trading name characters in boxes
+				    // Starting position for the first box
+				    const startX = 50;
+				    const boxY = height / 2 + 275;
+				    const boxWidth = 18.5; // Width between each character box
+				    
+				    // Maximum 25 characters as per form specification
+				    const tradingNameChars = tradingName.substring(0, 25).split('');
+				    
+				    tradingNameChars.forEach((char, index) => {
+				        firstPage.drawText(char.toUpperCase(), {
+				            x: startX + (index * boxWidth),
+				            y: boxY,
+				            size: 12,
+				            font: helveticaFont,
+				            color: rgb(0.95, 0.1, 0.1),
+				        });
+				    });
 			      
 			      firstPage.drawText('X', {
 			    	 x: 47,
@@ -224,7 +234,7 @@
 			        rotate: degrees(0),
 			      })
 			      
-			      firstPage.drawText('Mailing address', {
+			      firstPage.drawText('NULL', {
 			    	 x: 120,
 			    	 y: height / 2 - 10,
 			        size: 15,

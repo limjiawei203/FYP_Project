@@ -511,6 +511,32 @@ import java.util.Optional;
 	        
 	        return "";
 	    }
+	    
+	    @GetMapping("/previewPDFPage")
+	    public String showPreviewPDFPage(Model model) {
+	        List<Pdfdatabase> records = exceldatabaseService.getRecords();
+	        model.addAttribute("records", records);
+	        return "previewPDF";
+	    }
+	    
+	  //edit Preview
+	  @GetMapping("/pdf/edit/{id}")
+	  public String editpdfinfo(@PathVariable("id") Integer id, Model model) {
+
+	  	Pdfdatabase record = pdfDatabaseRepository.getReferenceById(id);
+	  	model.addAttribute("record", record);
+
+	  	return "edit_pdf";
+	  }
+
+	  @PostMapping("/pdf/edit/{id}") 
+	  public String saveUpdatedpdfInfo(@PathVariable("id") Integer id,@Valid Pdfdatabase record, BindingResult bindingResult) { 
+		  if(bindingResult.hasErrors()) { 
+			  return "edit_pdf"; 
+	  	    } 
+		  pdfDatabaseRepository.save(record); 
+	  	        return "redirect:/previewPDFPage"; 
+	  	    } 
 //	    
 //	    @GetMapping("/preview")
 //	    public ResponseEntity<InputStreamResource> previewAndDownloadForms() {

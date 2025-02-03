@@ -17,6 +17,10 @@ public class ExceldatabaseService {
     public List<Exceldatabase> getAllRecords() {
         return databaseSampleRepository.findAll();
     }
+    
+    public List<Pdfdatabase> getRecords() {
+        return pdfdatabaseRepository.findAll();
+    }
 
     // Method to find existing record using all fields
     public Exceldatabase findExistingRecord(String custNameTx, 
