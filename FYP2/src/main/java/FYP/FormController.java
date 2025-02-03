@@ -8,6 +8,7 @@ package FYP;
 	import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 	import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 	import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 	import org.springframework.http.MediaType;
@@ -47,6 +48,9 @@ import java.util.Optional;
 	    
 	    @Autowired
 	    private ExceldatabaseService exceldatabaseService;
+	    
+	    @Autowired
+	    private PdfdatabaseRepository pdfDatabaseRepository;
 	    
 	    @PostMapping("/uploadExcel")
 	    @Transactional
@@ -381,6 +385,132 @@ import java.util.Optional;
 	           	databaseSampleRepository.save(record); 
 	           	return "redirect:/previewPage"; 
 	        } 
+	    
+	    @PostMapping("/uploadPDF")
+	    @Transactional
+	    public String uploadPDF(@RequestParam("file") MultipartFile file, Model model) {
+	        try {
+	            // Load PDF document
+	            PDDocument document = PDDocument.load(file.getInputStream());
+	            String pdfText = new PDFTextStripper().getText(document);
+	            
+	            // Create new database entity
+	            Pdfdatabase pdfData = new Pdfdatabase();
+	            
+	            // Extract company name
+	            String companyName = extractValue(pdfText, "Name of Company :", "\n");
+	            pdfData.setCompanyName(companyName.trim());
+	            
+	            // Extract UEN
+	            String uen = extractValue(pdfText, "UEN :", "\n");
+	            pdfData.setUen(uen.trim());
+	            
+	            // Extract trading name (company name without PTE. LTD.)
+	            String tradingName = companyName.replaceAll("(?i)\\s+PTE\\.?\\s+LTD\\.?$", "").trim();
+	            pdfData.setTradingName(tradingName);
+	            
+	            // Extract postal code
+	            String address = extractValue(pdfText, "Registered Office Address :", "Date of Address");
+	            String postalCode = extractPostalCode(address);
+	            pdfData.setPostalCode(postalCode);
+	            
+	            // Extract director name
+	            String officerSection = extractValue(pdfText, "Officer(s)", "Shareholder(s)");
+	            String directorName = extractDirectorName(officerSection);
+	            pdfData.setDirectorName(directorName);
+	            
+	            // Extract business entity type
+	            String businessEntityType = extractValue(pdfText, "Company Type :", "\n");
+	            pdfData.setBusinessEntityType(businessEntityType.trim());
+	            
+	            // Save to database
+	            pdfDatabaseRepository.save(pdfData);
+	            
+	            document.close();
+	            model.addAttribute("message", "PDF processed successfully");
+	            return "index";
+	            
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            model.addAttribute("error", "Failed to process PDF: " + e.getMessage());
+	            return "index";
+	        }
+	    }
+
+	    private String extractValue(String text, String startMarker, String endMarker) {
+	        int startIndex = text.indexOf(startMarker);
+	        if (startIndex == -1) return "";
+	        
+	        startIndex += startMarker.length();
+	        int endIndex = text.indexOf(endMarker, startIndex);
+	        
+	        if (endIndex == -1) {
+	            return text.substring(startIndex).trim();
+	        }
+	        
+	        return text.substring(startIndex, endIndex).trim();
+	    }
+
+	    private String extractPostalCode(String address) {
+	        if (address == null) return "";
+	        
+	        String regex = "\\((\\d{6})\\)";
+	        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+	        java.util.regex.Matcher matcher = pattern.matcher(address);
+	        
+	        if (matcher.find()) {
+	            return matcher.group(1);
+	        }
+	        return "";
+	    }
+
+	    private String extractDirectorName(String officerSection) {
+	        if (officerSection == null || officerSection.isEmpty()) {
+	            return "";
+	        }
+
+	        // Split the section into lines
+	        String[] lines = officerSection.split("\n");
+	        
+	        // Find the line containing "Position" to identify the structure
+	        int positionIndex = -1;
+	        int nameIndex = -1;
+	        for (int i = 0; i < lines.length; i++) {
+	            if (lines[i].contains("Position")) {
+	                // Found the header row, now find the name column
+	                String[] headers = lines[i].split("\\s+");
+	                for (int j = 0; j < headers.length; j++) {
+	                    if (headers[j].equals("Name")) {
+	                        nameIndex = j;
+	                    }
+	                    if (headers[j].equals("Position")) {
+	                        positionIndex = j;
+	                    }
+	                }
+	                break;
+	            }
+	        }
+
+	        // If we found the position column, look for DIRECTOR
+	        if (positionIndex != -1 && nameIndex != -1) {
+	            for (int i = 0; i < lines.length; i++) {
+	                if (lines[i].contains("DIRECTOR")) {
+	                    // This is a line containing a director entry
+	                    // Parse the line to get the name
+	                    String[] fields = lines[i].split("\\s-");
+	                    
+	                    // Reconstruct the name (which might contain multiple words)
+	                    StringBuilder name = new StringBuilder();
+	                    for (int j = 0; j < fields.length && !fields[j].matches("S\\d{7}[A-Z]"); j++) {
+	                        name.append(fields[j]).append(" ");
+	                    }
+	                    return name.toString().trim();
+	                }
+	            }
+	        }
+	        
+	        return "";
+	    }
 //	    
 //	    @GetMapping("/preview")
 //	    public ResponseEntity<InputStreamResource> previewAndDownloadForms() {

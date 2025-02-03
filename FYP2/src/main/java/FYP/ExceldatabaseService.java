@@ -11,6 +11,9 @@ public class ExceldatabaseService {
     @Autowired
     private DatabaseSampleRepository databaseSampleRepository;
     
+    @Autowired
+    private PdfdatabaseRepository pdfdatabaseRepository;
+    
     public List<Exceldatabase> getAllRecords() {
         return databaseSampleRepository.findAll();
     }
@@ -43,5 +46,10 @@ public class ExceldatabaseService {
     // Method to save a new record
     public Exceldatabase saveRecord(Exceldatabase record) {
         return databaseSampleRepository.save(record);
+    }
+    
+ // Method to save a new record
+    public Pdfdatabase saveRecord(Pdfdatabase record) {
+        return pdfdatabaseRepository.save(record);
     }
 }
