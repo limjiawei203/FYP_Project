@@ -181,21 +181,21 @@
                     color: rgb(0, 0, 0),
                 })
 
-                // Draw trading name in boxes
-                const tradingNameChars = tradingName.substring(0, 25).split('');
-                const startX = 50;
-                const boxY = height - 120; // Adjusted for "Trading Name" position
-                const boxWidth = 18.5;
-                
-                tradingNameChars.forEach((char, index) => {
-                    firstPage.drawText(char.toUpperCase(), {
-                        x: startX + (index * boxWidth),
-                        y: boxY,
-                        size: 12,
-                        font: helveticaFont,
-                        color: rgb(0, 0, 0),
-                    });
-                });
+				// Draw trading name in boxes
+				const tradingNameChars = tradingName.replace(/\s/g, '').substring(0, 25).split('');
+				const startX = 50;
+				const boxY = height - 120; // Adjusted for "Trading Name" position
+				const boxWidth = 18.5;
+				
+				tradingNameChars.forEach((char, index) => {
+				    firstPage.drawText(char.toUpperCase(), {
+				        x: startX + (index * boxWidth),
+				        y: boxY,
+				        size: 12,
+				        font: helveticaFont,
+				        color: rgb(0, 0, 0),
+				    });
+				});
                 
                 firstPage.drawText('X', {
 			    	 x: 47,
