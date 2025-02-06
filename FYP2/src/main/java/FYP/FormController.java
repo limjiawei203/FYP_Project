@@ -28,6 +28,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,26 +61,117 @@ import java.util.Optional;
 	            Workbook workbook = WorkbookFactory.create(excelStream);
 	            Sheet sheet = workbook.getSheetAt(0);
 
-	            // Validate empty cells, phone format, and email format
-	            String validationError = validateExcelData(sheet);
-	            if (validationError != null) {
-	                model.addAttribute("error", validationError);
-	                return "index";
-	            }
+	            // Initialize validation results
+	            ValidationResult validationResult = new ValidationResult();
+	            
+	            // Validate data and collect empty cell information
+	            validateExcelData(sheet, validationResult);
 
-	            // If validation passes, proceed with processing
+	            // Process the data regardless of empty cells
 	            UploadResult result = processValidExcelData(sheet);
 	            
 	            // Prepare the message for the user
-	            String message = String.format("Excel file processed. Total records uploaded: %d, New records added: %d, Duplicate records: %d", 
-	                result.getTotalRecords(), result.getNewRecords(), result.getDuplicateRecords());
+	            StringBuilder messageBuilder = new StringBuilder();
+	            messageBuilder.append(String.format("Excel file processed. Total records uploaded: %d, New records added: %d, Duplicate records: %d", 
+	                result.getTotalRecords(), result.getNewRecords(), result.getDuplicateRecords()));
 	            
-	            model.addAttribute("message", message);
+	            // Add empty cell warnings if any
+	            if (!validationResult.getEmptyCells().isEmpty()) {
+	                messageBuilder.append("\n\nEmpty cells found in the following locations:");
+	                for (String emptyCell : validationResult.getEmptyCells()) {
+	                    messageBuilder.append("\n").append(emptyCell);
+	                }
+	            }
+
+	            // Add phone format warnings if any
+	            if (!validationResult.getInvalidPhones().isEmpty()) {
+	                messageBuilder.append("\n\nInvalid phone numbers found in the following locations:");
+	                for (String invalidPhone : validationResult.getInvalidPhones()) {
+	                    messageBuilder.append("\n").append(invalidPhone);
+	                }
+	            }
+
+	            // Add email format warnings if any
+	            if (!validationResult.getInvalidEmails().isEmpty()) {
+	                messageBuilder.append("\n\nInvalid email formats found in the following locations:");
+	                for (String invalidEmail : validationResult.getInvalidEmails()) {
+	                    messageBuilder.append("\n").append(invalidEmail);
+	                }
+	            }
+	            
+	            // Add timestamp to message
+	            messageBuilder.append(String.format("Excel file processed at %s. ", 
+	                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))));
+	            messageBuilder.append(String.format("Total records uploaded: %d, New records added: %d, Duplicate records: %d", 
+	                result.getTotalRecords(), result.getNewRecords(), result.getDuplicateRecords()));
+	            
+
+	            model.addAttribute("message", messageBuilder.toString());
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	            model.addAttribute("error", "Failed to process the Excel file: " + e.getMessage());
 	        }
 	        return "index";
+	    }
+
+	    // New class to track validation issues
+	    private class ValidationResult {
+	        private List<String> emptyCells = new ArrayList<>();
+	        private List<String> invalidPhones = new ArrayList<>();
+	        private List<String> invalidEmails = new ArrayList<>();
+
+	        public List<String> getEmptyCells() { return emptyCells; }
+	        public List<String> getInvalidPhones() { return invalidPhones; }
+	        public List<String> getInvalidEmails() { return invalidEmails; }
+
+	        public void addEmptyCell(String location) { emptyCells.add(location); }
+	        public void addInvalidPhone(String location) { invalidPhones.add(location); }
+	        public void addInvalidEmail(String location) { invalidEmails.add(location); }
+	    }
+
+	    private void validateExcelData(Sheet sheet, ValidationResult validationResult) {
+	        // Get column headers for validation
+	        Map<Integer, String> columnHeaders = new HashMap<>();
+	        Row headerRow = sheet.getRow(0);
+	        for (int i = 0; i < headerRow.getLastCellNum() && i < 6; i++) {
+	            columnHeaders.put(i, headerRow.getCell(i).getStringCellValue());
+	        }
+	        
+	        // Check each row starting from row 2 (index 1)
+	        for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
+	            Row row = sheet.getRow(rowNum);
+	            if (row == null) continue;
+
+	            // Check each cell in columns A to F
+	            for (int colNum = 0; colNum < 6; colNum++) {
+	                org.apache.poi.ss.usermodel.Cell cell = row.getCell(colNum);
+	                String cellValue = getCellValueAsString(cell);
+	                
+	                if (cellValue == null || cellValue.trim().isEmpty()) {
+	                    // Convert column number to letter (0=A, 1=B, etc.)
+	                    char columnLetter = (char) ('A' + colNum);
+	                    validationResult.addEmptyCell(String.format("Cell %c%d (%s)", 
+	                        columnLetter, rowNum + 1, columnHeaders.get(colNum)));
+	                }
+
+	                // Validate phone format for column E (index 4)
+	                if (colNum == 4 && !cellValue.trim().isEmpty()) {
+	                    String phoneValidation = isValidSingaporePhone(cellValue.trim());
+	                    if (phoneValidation != null) {
+	                        validationResult.addInvalidPhone(String.format("Cell E%d: %s - %s", 
+	                            rowNum + 1, cellValue, phoneValidation));
+	                    }
+	                }
+
+	                // Validate email format for column F (index 5)
+	                if (colNum == 5 && !cellValue.trim().isEmpty()) {
+	                    if (!isValidEmail(cellValue.trim())) {
+	                        validationResult.addInvalidEmail(String.format("Cell F%d: %s", 
+	                            rowNum + 1, cellValue));
+	                    }
+	                }
+	            }
+	        }
 	    }
 	    
 	 // New class to track upload results

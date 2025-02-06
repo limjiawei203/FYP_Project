@@ -128,7 +128,7 @@
                     <i class="fas fa-download"></i> Download All Forms
                 </a>
             </div>
-
+            
             <div th:if="${records.empty}" class="no-records">
                 <p>No forms available for preview. Please upload an Excel file first.</p>
             </div>
@@ -142,17 +142,22 @@
                             <th>Contact Name</th>
                             <th>Mobile Number</th>
                             <th>Email</th>
+                            <th>Last Modified</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="record : ${records}">
+                        <tr th:each="record : ${records}" 
+                            th:class="${record.lastModified != null &&#temporals.createNow().minusMinutes(5).isBefore(record.lastModified)} ? 'recent-update' : ''">
                             <td th:text="${record.cust_name_tx}"></td>
                             <td th:text="${record.trading_name}"></td>
-                            <td th:text="${record.ctc_name}"></td>
+                            <td th:text="${record.ctc_name}"></td>	
                             <td th:text="${record.mobile_no}"></td>
                             <td th:text="${record.email_tx}"></td>
-                            <td><a th:href="@{info/edit/{id}(id=${record.id})}">Edit</a></td>
+							<td>
+							    <span class="timestamp" th:text="${#temporals.format(record.lastModified, 'dd/MM/yyyy HH:mm:ss')}"></span>
+							</td>
+                            <td><a th:href="@{info/edit/{id}(id=${record.id})}">Edit/Download</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -160,6 +165,18 @@
         </div>
         <div th:replace="fragments/footer"></div>
     </div>
+    
+    <!-- Add this JavaScript to highlight recent changes -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove highlighting after 5 seconds
+            setTimeout(function() {
+                document.querySelectorAll('.recent-update').forEach(function(element) {
+                    element.style.backgroundColor = 'transparent';
+                });
+            }, 5000);
+        });
+    </script>
 
     <!-- Add Font Awesome for icons -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>

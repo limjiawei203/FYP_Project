@@ -1,9 +1,13 @@
 package FYP;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,6 +22,28 @@ public class Exceldatabase {
     private String ctc_name;
     private String mobile_no;
     private String email_tx;
+    private LocalDateTime last_Modified;
+
+    // Getter and setter for lastModified
+    public LocalDateTime getLastModified() {
+        return last_Modified;
+    }
+
+    public void setLastModified(LocalDateTime lastModified) {
+        this.last_Modified = lastModified;
+    }
+
+    // Only update timestamp on entity updates, not on creations
+    @PreUpdate
+    public void onUpdate() {
+        this.last_Modified = LocalDateTime.now();
+    }
+
+    // Set initial timestamp on creation
+    @PrePersist
+    public void onCreate() {
+        this.last_Modified = LocalDateTime.now();
+    }
 
     // Getters and Setters
     public int getId() {
