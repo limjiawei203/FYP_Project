@@ -56,22 +56,38 @@ public class HomeController {
 	}
 
 	@PostMapping("/admin/registered")
-	public String saveMember(@Valid Member member, BindingResult bindingResult, RedirectAttributes redirectAttribute) {
-		if (bindingResult.hasErrors()) {
-			return "Register";
-		}
-		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		String encodedPassword = passwordEncoder.encode(member.getPassword());
-
-		member.setPassword(encodedPassword);
-		member.setRole("ROLE_ADMIN");
-
-		memberRepository.save(member);
-
-		redirectAttribute.addFlashAttribute("success", "Admin registered!");
-
-		return "redirect:/";
-	}
+    public String saveMember(@Valid Member member, BindingResult bindingResult, Model model, RedirectAttributes redirectAttribute) {
+        // First check for validation errors
+        if (bindingResult.hasErrors()) {
+            return "Register";
+        }
+        
+        // Check for duplicate NRIC
+        if (memberRepository.existsByNric(member.getNric())) {
+            model.addAttribute("nricError", "This NRIC is already registered");
+            return "Register";
+        }
+        
+        // Proceed with registration if no duplicates
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encodedPassword = passwordEncoder.encode(member.getPassword());
+        member.setPassword(encodedPassword);
+        member.setRole("ROLE_ADMIN");
+        
+        // Save the member
+        memberRepository.save(member);
+        
+        // Send confirmation email
+        try {
+        	exceldatabaseService.sendRegistrationConfirmationEmail(member);
+            redirectAttribute.addFlashAttribute("success", "Admin registered! A confirmation email has been sent.");
+        } catch (Exception e) {
+            System.err.println("Failed to send confirmation email: " + e.getMessage());
+            redirectAttribute.addFlashAttribute("success", "Admin registered! (Email notification failed)");
+        }
+        
+        return "redirect:/";
+    }
 	
 	@GetMapping("/")
 	public String viewForm() {

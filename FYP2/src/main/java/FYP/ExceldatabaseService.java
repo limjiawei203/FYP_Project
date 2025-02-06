@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @Service
 public class ExceldatabaseService {
@@ -55,5 +57,20 @@ public class ExceldatabaseService {
  // Method to save a new record
     public Pdfdatabase saveRecord(Pdfdatabase record) {
         return pdfdatabaseRepository.save(record);
+    }
+    
+    @Autowired
+    private JavaMailSender mailSender;
+    
+    public void sendRegistrationConfirmationEmail(Member member) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(member.getEmail());
+        message.setSubject("Registration Confirmation");
+        message.setText("Dear " + member.getName() + ",\n\n" +
+                       "Thank you for registering as an admin. Your registration has been successful!\n\n" +
+                       "Your username: " + member.getUsername() + "\n\n" +
+                       "Best regards,\nYour Application Team");
+        
+        mailSender.send(message);
     }
 }

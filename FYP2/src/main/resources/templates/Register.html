@@ -56,14 +56,16 @@
             <form class="needs-validation" th:action="@{/admin/registered}"
                 method="post" th:object="${member}" novalidate>
                 
-                <div class="mb-3 col-5">
-                    <label for="member_nric" class="form-label">NRIC: </label>
-                    <input id="member_nric" type="text" class="form-control"
-                        th:field="*{nric}" required pattern="^[STFGM][0-9]{7}[A-Z]$" />
-                    <div class="invalid-feedback">Please enter a valid NRIC (e.g., S1234567A).</div>
-                    <p class="text-danger" th:if="${#fields.hasErrors('nric')}"
-                        th:errors="*{nric}"></p>
-                </div>
+				<div class="mb-3 col-5">
+				    <label for="member_nric" class="form-label">NRIC: </label>
+				    <input id="member_nric" type="text" class="form-control"
+				        th:field="*{nric}" required pattern="^[STFGM][0-9]{7}[A-Z]$" />
+				    <div class="invalid-feedback">Please enter a valid NRIC (e.g., S1234567A).</div>
+				    <p class="text-danger" th:if="${#fields.hasErrors('nric')}"
+				        th:errors="*{nric}"></p>
+				    <!-- Add this line for duplicate NRIC error -->
+				    <p class="text-danger" th:if="${nricError}" th:text="${nricError}"></p>
+				</div>
                 
                 <div class="mb-3 col-5">
                     <label for="member_name" class="form-label">Name: </label> 
