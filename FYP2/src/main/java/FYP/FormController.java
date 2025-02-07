@@ -102,8 +102,6 @@ import java.util.Optional;
 	            // Add timestamp to message
 	            messageBuilder.append(String.format("Excel file processed at %s. ", 
 	                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))));
-	            messageBuilder.append(String.format("Total records uploaded: %d, New records added: %d, Duplicate records: %d", 
-	                result.getTotalRecords(), result.getNewRecords(), result.getDuplicateRecords()));
 	            
 
 	            model.addAttribute("message", messageBuilder.toString());
@@ -293,7 +291,7 @@ import java.util.Optional;
 	        
 	        // Check basic format
 	        if (cleanPhone.length() != 8) {
-	            return "Mobile numbers must be 8 digits long";
+	            return "Mobile numbers must be 8 digits long ";
 	        }
 
 	        // Check first digit (must be 8 or 9 for mobile numbers)

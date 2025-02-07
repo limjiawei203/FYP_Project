@@ -1,5 +1,7 @@
 package FYP;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -21,6 +23,29 @@ public class Pdfdatabase {
     private String directorName;
     
     private String businessEntityType;
+    
+    private LocalDateTime last_Modified;
+
+    // Getter and setter for lastModified
+    public LocalDateTime getLastModified() {
+        return last_Modified;
+    }
+
+    public void setLastModified(LocalDateTime lastModified) {
+        this.last_Modified = lastModified;
+    }
+
+    // Only update timestamp on entity updates, not on creations
+    @PreUpdate
+    public void onUpdate() {
+        this.last_Modified = LocalDateTime.now();
+    }
+
+    // Set initial timestamp on creation
+    @PrePersist
+    public void onCreate() {
+        this.last_Modified = LocalDateTime.now();
+    }
    
 
     // Basic getters and setters

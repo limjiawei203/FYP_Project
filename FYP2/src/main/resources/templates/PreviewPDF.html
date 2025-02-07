@@ -124,9 +124,6 @@
                 <a th:href="@{/}" class="btn btn-back">
                     <i class="fas fa-arrow-left"></i> Back to Upload
                 </a>
-                <a th:href="@{/downloadForms}" class="btn btn-download">
-                    <i class="fas fa-download"></i> Download All Forms
-                </a>
             </div>
 
             <div th:if="${records.empty}" class="no-records">
@@ -143,6 +140,7 @@
                             <th>Postal Code</th>
                             <th>Director Name</th>
                             <th>Business Entity Type</th>
+                            <th>Last Modified</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -154,6 +152,9 @@
                             <td th:text="${record.postalCode}"></td>
                             <td th:text="${record.directorName}"></td>
                             <td th:text="${record.businessEntityType}"></td>
+                            <td>
+							    <span class="timestamp" th:text="${#temporals.format(record.lastModified, 'dd/MM/yyyy HH:mm:ss')}"></span>
+							</td>
                             <td><a th:href="@{pdf/edit/{id}(id=${record.id})}">Edit/Download</a></td>
                         </tr>
                     </tbody>
