@@ -498,7 +498,11 @@ import java.util.Optional;
 	            
 	            // Extract trading name (company name without PTE. LTD.)
 	            String tradingName = companyName.replaceAll("(?i)\\s+PTE\\.?\\s+LTD\\.?$", "").trim();
+	            if (tradingName.length() > 25) {
+	                tradingName = tradingName.substring(0, 25); // Truncate at 25 characters
+	            }
 	            pdfData.setTradingName(tradingName);
+
 	            
 	            // Extract postal code
 	            String address = extractValue(pdfText, "Registered Office Address :", "Date of Address");
@@ -512,7 +516,14 @@ import java.util.Optional;
 	            
 	            // Extract business entity type
 	            String businessEntityType = extractValue(pdfText, "Company Type :", "\n");
-	            pdfData.setBusinessEntityType(businessEntityType.trim());
+	            if (isACRADocument(pdfText)) {
+	                pdfData.setBusinessEntityType("REGISTERED WITH ACRA");  // Check that it is registered with ACRA
+	                System.out.println("Company Type: " + businessEntityType); // Debugging log
+	            } else {
+	                pdfData.setBusinessEntityType("OTHERS"); // Fallback in case it's not an ACRA document
+	                System.out.println("Business Entity Type set to: Others");
+	            }
+
 	            
 	            // Save to database
 	            pdfDatabaseRepository.save(pdfData);
@@ -527,6 +538,49 @@ import java.util.Optional;
 	            return "index";
 	        }
 	    }
+
+	    private boolean isACRADocument(String extractedText) {
+	        if (extractedText == null || extractedText.trim().isEmpty()) {
+	            return false;
+	        }
+
+	        // Debugging: Print extracted text for verification
+	        System.out.println("Extracted text (first 500 chars):\n" + extractedText.substring(0, Math.min(500, extractedText.length())));
+
+	        // Ensure extracted text is normalized to avoid issues with spaces or newlines
+	        extractedText = extractedText.replaceAll("\\s+", " ").trim();  // Replace multiple spaces/newlines with single space
+
+	        // List of required ACRA keywords
+	        boolean hasAcraHeader = extractedText.contains("ACCOUNTING AND CORPORATE REGULATORY AUTHORITY");
+	        boolean hasBusinessProfile = extractedText.contains("Business Profile");
+	        boolean hasUEN = extractedText.contains("UEN :");
+	        boolean hasCompanyName = extractedText.contains("Name of Company :");
+	        boolean hasAddress = extractedText.contains("Registered Office Address :");
+	        
+	        // Check for the signature section (as a sign of official ACRA document)
+	     // Check for the signature section, Receipt Number, and Date together
+	        boolean hasSignatureSection = extractedText.matches("(?i).ASST REGISTRAR OF COMPANIES & BUSINESS NAMES.")
+	                && extractedText.matches("(?i).ACCOUNTING AND CORPORATE REGULATORY AUTHORITY \\(ACRA\\).")
+	                && extractedText.matches("(?i).RECEIPT NO\\.\\s:\\s*ACRA\\d{12}.*")
+	                && extractedText.matches("(?i).DATE\\s:\\s*\\d{2} [A-Z]{3} \\d{4}.*");
+
+	        // Debugging: Log which conditions are matched
+	        System.out.println("ACRA Header Found: " + hasAcraHeader);
+	        System.out.println("Business Profile Found: " + hasBusinessProfile);
+	        System.out.println("UEN Found: " + hasUEN);
+	        System.out.println("Company Name Found: " + hasCompanyName);
+	        System.out.println("Address Found: " + hasAddress);
+	        System.out.println("Signature Section (with Receipt No. & Date) Found: " + hasSignatureSection);
+
+	        // All conditions must be true for a valid ACRA document
+	        boolean isValidAcraDocument = hasAcraHeader && hasBusinessProfile && hasUEN && hasCompanyName && hasAddress && hasSignatureSection;
+
+	        System.out.println("Final ACRA Document Status: " + isValidAcraDocument); // ✅ Debugging log
+
+	        return isValidAcraDocument;
+	    }
+
+
 
 	    private String extractValue(String text, String startMarker, String endMarker) {
 	        int startIndex = text.indexOf(startMarker);
@@ -555,53 +609,49 @@ import java.util.Optional;
 	        return "";
 	    }
 
-	    private String extractDirectorName(String officerSection) {
-	        if (officerSection == null || officerSection.isEmpty()) {
+	    private static String extractDirectorName(String officerSection) {
+	    	if (officerSection == null || officerSection.isEmpty()) {
 	            return "";
 	        }
 
-	        // Split the section into lines
+	        // Split the text into lines
 	        String[] lines = officerSection.split("\n");
-	        
-	        // Find the line containing "Position" to identify the structure
-	        int positionIndex = -1;
-	        int nameIndex = -1;
+	        List<String> cleanedLines = new ArrayList<>();
+
+	        // Debug: Print all lines with indexes
+	        System.out.println("Lines:");
 	        for (int i = 0; i < lines.length; i++) {
-	            if (lines[i].contains("Position")) {
-	                // Found the header row, now find the name column
-	                String[] headers = lines[i].split("\\s+");
-	                for (int j = 0; j < headers.length; j++) {
-	                    if (headers[j].equals("Name")) {
-	                        nameIndex = j;
-	                    }
-	                    if (headers[j].equals("Position")) {
-	                        positionIndex = j;
-	                    }
+	            String trimmedLine = lines[i].trim();
+	            cleanedLines.add(trimmedLine);
+	            System.out.println(i + ": " + trimmedLine);
+	        }
+
+	        String lastSeenName = "";  // Store the last detected name
+
+	        for (int i = 0; i < cleanedLines.size(); i++) {
+	            String line = cleanedLines.get(i);
+
+	            // Check if the line contains "DIRECTOR"
+	            if (line.contains("DIRECTOR")) {
+	                System.out.println("Found 'DIRECTOR' at line: " + i + " -> " + line);
+
+	                // Return the last stored name (ZHOU LIZHONG)
+	                if (!lastSeenName.isEmpty()) {
+	                    System.out.println("Extracted Director Name at line " + i + ": " + lastSeenName);
+	                    return lastSeenName;
 	                }
-	                break;
+	            }
+
+	            // Store name (assuming uppercase names are at the start of lines)
+	            if (i > 0 && cleanedLines.get(i - 1).equals("Address")) {
+	                System.out.println("Detected Name at line: " + i + " -> " + line);
+	                lastSeenName = line;
 	            }
 	        }
 
-	        // If we found the position column, look for DIRECTOR
-	        if (positionIndex != -1 && nameIndex != -1) {
-	            for (int i = 0; i < lines.length; i++) {
-	                if (lines[i].contains("DIRECTOR")) {
-	                    // This is a line containing a director entry
-	                    // Parse the line to get the name
-	                    String[] fields = lines[i].split("\\s-");
-	                    
-	                    // Reconstruct the name (which might contain multiple words)
-	                    StringBuilder name = new StringBuilder();
-	                    for (int j = 0; j < fields.length && !fields[j].matches("S\\d{7}[A-Z]"); j++) {
-	                        name.append(fields[j]).append(" ");
-	                    }
-	                    return name.toString().trim();
-	                }
-	            }
-	        }
-	        
-	        return "";
+	        return ""; // Return empty if no director is found
 	    }
+
 	    
 	    @GetMapping("/previewPDFPage")
 	    public String showPreviewPDFPage(Model model) {
