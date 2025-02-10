@@ -106,9 +106,14 @@
                     <label for="businessEntityType" class="form-label">Business Entity Type:</label> 
                     <select id="businessEntityType" class="form-select" th:field="*{businessEntityType}" required>
                         <option value="">Select business type</option>
-                        <option value="Registered with ACRA">Registered with ACRA</option>
-                        <option value="Government Agency">Government Agency</option>
-                        <option value="Public Company">Public Company</option>
+						<option value="Government Agency">GOVERNMENT AGENCY</option>
+                        <option value="Public Company">PUBLIC COMPANY</option>
+                        <option value="Club & Society">CLUB & SOCIETY</option>
+                        <option value="Foreign Company">FOREIGN COMPANY</option>
+                        <option value="Charities">CHARITIES</option>
+                        <option value="Trust Entity">TRUST ENTITY</option>
+                        <option value="Others">OTHERS</option>
+
                     </select>
                     <div class="invalid-feedback">Please select a business entity type.</div>
                     <p class="text-danger" th:if="${#fields.hasErrors('businessEntityType')}"

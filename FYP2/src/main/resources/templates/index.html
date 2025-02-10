@@ -5,76 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Form Manager</title>
     <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-	<script src="/bootstrap/js/bootstrap.js"></script>
-    	<script src="https://unpkg.com/pdf-lib@1.11.0"></script>
-    	<script src="https://unpkg.com/downloadjs@1.4.7"></script>
-	<style>
+    <script src="/bootstrap/js/bootstrap.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.11.0"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Arial', sans-serif;
         }
-
+        
         .container {
             padding-top: 20px;
         }
-
+        
         .main-content {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
-            text-align: center;
         }
-
+        
+        .upload-section {
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
         h1 {
             color: #007bff;
             margin-bottom: 20px;
         }
-
+        
+        h2 {
+            color: #6c757d;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
         .btn {
             margin: 10px;
         }
-
+        
         .error {
             color: red;
             margin-top: 20px;
         }
         
-        .btn-download {
-        	background-color: blue;
-        	border-color: blue;
-        	color: white;
+        .success {
+            color: green;
+            margin-top: 20px;
+        }
+        
+        .file-input-wrapper {
+            margin-bottom: 15px;
+        }
+        
+        .file-requirements {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-     <div class="container">
-     	<div th:replace="fragments/header"></div>
+    <div class="container">
+        <div th:replace="fragments/header"></div>
         <div class="main-content">
-            <h1>Your Pre-filled Application Form</h1>
-
-            <form th:action="@{/uploadExcel}" method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <input type="file" name="file" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Upload Excel File</button>
-                
-            </form>
+            <h1>Application Form Manager</h1>
             
-            <form th:action="@{/uploadPDF}" method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <input type="file" name="file" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Upload PDF File</button>
-                
-            </form>
-
-            <a th:href="@{/previewPage}" class="btn btn-download">Preview Excel Forms</a>
-            <a th:href="@{/previewPDFPage}" class="btn btn-download">Preview PDF Forms</a>
-
-            <p th:text="${message}" class="text-success"></p>
-            <p th:text="${error}" class="text-danger"></p>
+            <!-- Excel Upload Section -->
+            <div class="upload-section">
+                <h2>Excel File Upload</h2>
+                <form th:action="@{/uploadExcel}" method="post" enctype="multipart/form-data">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        <div class="file-requirements">
+                            Accepted formats: .xlsx (Correct Excel information only)
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload Excel</button>
+                    
+                    <a th:href="@{/previewPage}" class="btn btn-secondary">Preview Excel Records</a>
+                </form>
+            </div>
+            
+            <!-- PDF Upload Section -->
+            <div class="upload-section">
+                <h2>ACRA PDF Upload</h2>
+                <form th:action="@{/uploadPDF}" method="post" enctype="multipart/form-data">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="file" class="form-control" accept=".pdf" required>
+                        <div class="file-requirements">
+                            Accepted format: .pdf (ACRA documents only)
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload PDF</button>
+                    
+                    <a th:href="@{/previewPDFPage}" class="btn btn-secondary">Preview PDF Records</a>
+                </form>
+            </div>
+            
+            <!-- Messages -->
+            <div th:if="${message}" class="success" th:text="${message}"></div>
+            <div th:if="${error}" class="error" th:text="${error}"></div>
+            
         </div>
         <div th:replace="fragments/footer"></div>
     </div>
